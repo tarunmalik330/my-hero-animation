@@ -4,42 +4,32 @@ import gsap from "gsap";
 
 const Hero = () => {
   const lettersRef = useRef([]);
+  const secondTextRefs = useRef([]);
   const flowerContainer = useRef(null);
 
   const [showSecondText, setShowSecondText] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const [startPos, setStartPos] = useState(null);
-  const [currentPos, setCurrentPos] = useState(null);
+  const [dragInfo, setDragInfo] = useState({
+    dragging: false,
+    start: null,
+    current: null,
+  });
 
-  const getRandomEmojis = () => {
-    const emojiSets = [
-      ["🌸", "💐", "🌺", "🌷"],
-      ["🌻", "🌼", "🌹", "💮"],
-      ["🪻", "🪷", "🌼", "🌸"],
-      ["🌞", "🌝", "✨", "🌟"],
-    ];
-    return emojiSets[Math.floor(Math.random() * emojiSets.length)];
-  };
+  const getRandomEmojis = () => ["🌸", "🌸", "🌸", "💐", "🌺", "🌸"];
 
   const scatterEmojis = (x, y, emojis = getRandomEmojis()) => {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-
+    const { innerWidth: w, innerHeight: h } = window;
     for (let i = 0; i < 40; i++) {
       const emoji = document.createElement("span");
       emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
       emoji.className = "absolute pointer-events-none select-none";
-      emoji.style.fontSize = `${Math.random() * 60 + 40}px`;
+      emoji.style.fontSize = `${Math.random() * 60 + 60}px`;
       emoji.style.left = `${x}px`;
       emoji.style.top = `${y}px`;
       flowerContainer.current.appendChild(emoji);
 
-      const randomX = (Math.random() - 0.5) * screenWidth;
-      const randomY = Math.random() * screenHeight;
-
       gsap.to(emoji, {
-        x: randomX,
-        y: randomY + 200,
+        x: (Math.random() - 0.5) * w,
+        y: Math.random() * h + 200,
         opacity: 0,
         rotate: Math.random() * 360,
         duration: 2 + Math.random() * 1.5,
@@ -53,27 +43,13 @@ const Hero = () => {
     const timer = setTimeout(() => {
       const rElement = lettersRef.current[2];
       if (rElement) {
-        const rect = rElement.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + window.scrollY + rect.height / 2;
-        scatterEmojis(x, y);
+        const { left, top, width, height } = rElement.getBoundingClientRect();
+        scatterEmojis(left + width / 2, top + window.scrollY + height / 2);
       }
 
       gsap
         .timeline()
-        .fromTo(
-          lettersRef.current,
-          { y: 100, opacity: 0, scale: 0.5 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            stagger: 0.1,
-            duration: 0.8,
-            ease: "power4.out",
-          }
-        )
-        .to({}, { duration: 1 }) // pause
+        .to({}, { duration: 1 })
         .to(lettersRef.current, {
           y: 500,
           rotate: () => Math.random() * 360 - 180,
@@ -81,103 +57,125 @@ const Hero = () => {
           ease: "power2.in",
           stagger: 0.1,
         })
-        .call(() => setShowSecondText(true));
+        .call(() => {
+          setShowSecondText(true);
+          setTimeout(() => {
+            const order = [
+              0, 7, 1, 6, 2, 5, 3, 4, 9, 16, 10, 13, 11, 15, 12, 14, 17,
+            ];
+            gsap.fromTo(
+              order.map((i) => secondTextRefs.current[i]),
+              { y: -100, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: "power3.out",
+                stagger: 0.1,
+              }
+            );
+          }, 50);
+        });
     }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    const handleMouseDown = (e) => {
-      setDragging(true);
-      const position = { x: e.clientX, y: e.clientY };
-      setStartPos(position);
-      setCurrentPos(position);
-      scatterEmojis(position.x, position.y);
+    const onMouseDown = (e) => {
+      const pos = { x: e.clientX, y: e.clientY };
+      setDragInfo({ dragging: true, start: pos, current: pos });
+      // Removed scatterEmojis() here to prevent scattering on drag start
     };
 
-    const handleMouseMove = (e) => {
-      if (dragging) {
-        setCurrentPos({ x: e.clientX, y: e.clientY });
+    const onMouseMove = (e) => {
+      if (dragInfo.dragging) {
+        setDragInfo((info) => ({ 
+          ...info,
+          current: { x: e.clientX, y: e.clientY },
+        }));
       }
     };
 
-    const handleMouseUp = () => {
-      if (dragging && startPos && currentPos) {
-        const distance = Math.hypot(
-          currentPos.x - startPos.x,
-          currentPos.y - startPos.y
-        );
-        if (distance > 10) {
-          scatterEmojis(startPos.x, startPos.y);
+    const onMouseUp = (e) => {
+      const { dragging, start, current } = dragInfo;
+      if (dragging && start && current) {
+        const dist = Math.hypot(current.x - start.x, current.y - start.y);
+        if (dist > 10) {
+          scatterEmojis(start.x, start.y);
+        } else {
+          scatterEmojis(e.clientX, e.clientY);
         }
+      } else {
+        scatterEmojis(e.clientX, e.clientY);
       }
-      setDragging(false);
-      setStartPos(null);
-      setCurrentPos(null);
+      setDragInfo({ dragging: false, start: null, current: null });
     };
 
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 
     return () => {
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [dragging, startPos, currentPos]);
+  }, [dragInfo]);
 
+  const renderText = (text, refs) =>
+    text.split("").map((char, i) => (
+      <span
+        key={i}
+        ref={(el) => (refs.current[i] = el)}
+        className="inline-block"
+      >
+        {char === " " ? "\u00A0" : char}
+      </span>
+    ));
   return (
     <div className="bg-black min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-white font-bold text-center">
       <div className="relative z-10">
-        {!showSecondText ? (
-          <h1 className="flex text-6xl md:text-9xl flex-wrap gap-2">
-            {"Tarun".split("").map((letter, index) => (
-              <span
-                key={index}
-                ref={(el) => (lettersRef.current[index] = el)}
-                className="inline-block"
-              >
-                {letter}
-              </span>
-            ))}
-          </h1>
-        ) : (
-          <h2 className="text-4xl md:text-6xl">
-            I am a Frontend Developer and you ...
+        {showSecondText ? (
+          <h2 className="text-4xl md:text-6xl flex flex-wrap justify-center gap-2">
+            {renderText("Frontend Developer", secondTextRefs)}
           </h2>
+        ) : (
+          <h1 className="flex text-6xl md:text-9xl flex-wrap gap-2">
+            {renderText("Tarun", lettersRef)}
+          </h1>
         )}
       </div>
+
       <div
         ref={flowerContainer}
         className="absolute top-0 left-0 w-full h-full pointer-events-none z-0"
       >
-        {dragging && startPos && (
+        {dragInfo.dragging && dragInfo.start && (
           <>
             <span
               className="absolute z-20 text-[80px] md:text-[180px] pointer-events-none select-none"
               style={{
-                left: `${startPos.x}px`,
-                top: `${startPos.y}px`,
+                left: `${dragInfo.start.x}px`,
+                top: `${dragInfo.start.y}px`,
                 transform: "translate(-50%, -50%)",
               }}
             >
               🌸
             </span>
-            {currentPos && (
+            {dragInfo.current && (
               <div
                 className="absolute border-t-2 border-dashed border-white origin-left"
                 style={{
-                  left: `${startPos.x}px`,
-                  top: `${startPos.y}px`,
+                  left: `${dragInfo.start.x}px`,
+                  top: `${dragInfo.start.y}px`,
                   width: `${Math.hypot(
-                    currentPos.x - startPos.x,
-                    currentPos.y - startPos.y
+                    dragInfo.current.x - dragInfo.start.x,
+                    dragInfo.current.y - dragInfo.start.y
                   )}px`,
                   transform: `rotate(${Math.atan2(
-                    currentPos.y - startPos.y,
-                    currentPos.x - startPos.x
+                    dragInfo.current.y - dragInfo.start.y,
+                    dragInfo.current.x - dragInfo.start.x
                   )}rad)`,
                 }}
               />
