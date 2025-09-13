@@ -63,48 +63,49 @@ export default function PhaseSection() {
           className="absolute top-[50px] left-1/2 -translate-x-1/2 rotate-0"
         >
           {/* Arcs */}
-          <div className="flex items-center justify-center relative">
+          <div className="flex items-center justify-center relative z-10">
             <div
               className="w-[1529px] h-[1521px] rounded-full border border-white/20"
-              style={{ clipPath: "inset(0 0 50% 0)" }}
+              style={{ clipPath: "inset(0 0 40% 0)" }}
             ></div>
             <div
               className="absolute w-[1368px] h-[1368px] bottom-[3%] rounded-full border border-white"
-              style={{ clipPath: "inset(0 0 50% 0)" }}
+              style={{ clipPath: "inset(0 0 40% 0)" }}
             ></div>
             <div
               className="absolute w-[1148px] h-[1141px] bottom-[8%] rounded-full border border-yellow-600"
-              style={{ clipPath: "inset(0 0 50% 0)" }}
+              style={{ clipPath: "inset(0 0 40% 0)" }}
             ></div>
             <div
               className="absolute w-[1090px] h-[1090px] bottom-0 rounded-full bg-[#231913]"
-              style={{ clipPath: "inset(0 0 50% 0)" }}
+              style={{ clipPath: "inset(0 0 40% 0)" }}
             ></div>
           </div>
 
           {/* Left & Right Numbers (now inside rotating container) */}
           <div
             onClick={() => rotateTo(0)}
-            className="absolute top-[180px] left-[calc(38%-460px)] text-white/30 text-[120px] -rotate-[30deg] cursor-pointer"
+            className="absolute top-[180px] left-[calc(38%-460px)] text-white/30 text-[120px] -rotate-[30deg] cursor-pointer z-20"
           >
             {left}
           </div>
+          <div className="w-[300px] h-[300px] rounded-full bg-yellow-500/40 absolute top-[140px] left-[calc(38%-490px)] blur-[100px]"></div>
           <div
             onClick={() => rotateTo(1)}
-            className="absolute top-[180px] right-[calc(38%-460px)] text-white/80 text-[120px] rotate-[30deg] cursor-pointer"
+            className="absolute top-[180px] right-[calc(38%-460px)] text-white/80 text-[120px] rotate-[30deg] cursor-pointer z-20"
           >
             {right}
           </div>
-
+          <div className="w-[300px] h-[300px] rounded-full bg-yellow-500/40 absolute top-[120px] right-[calc(38%-510px)] blur-[100px]"></div>
           {/* Center Number */}
           <div
-            className="absolute -top-[3%] left-1/2 -translate-x-1/2 text-[120px] font-light cursor-pointer leading-none"
+            className="absolute -top-[3%] left-1/2 -translate-x-1/2 text-[120px] font-light cursor-pointer leading-none z-20"
             onClick={() => rotateTo((active + 1) % phases.length)}
           >
             {center}
           </div>
         </div>
-
+        <div className="w-[300px] h-[300px] rounded-full bg-yellow-500/40 absolute -top-[3%] left-1/2 -translate-x-1/2 blur-[100px]"></div>
         {/* Center Line and Dot */}
         <div className="absolute top-[150px] left-1/2 -translate-x-1/2 h-[180px] w-[1px] bg-white/40"></div>
         <div className="absolute top-[150px] shadow-white shadow-lg left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white"></div>
