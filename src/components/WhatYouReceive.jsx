@@ -19,7 +19,7 @@ const phases = [
 
 const ANGLE_STEP = 15 / phases.length;
 
-export default function PhaseSection() {
+const WhatYouReceive = () => {
   const [active, setActive] = useState(0);
   const arcRef = useRef(null);
   const textRef = useRef(null);
@@ -126,4 +126,5 @@ export default function PhaseSection() {
       </div>
     </div>
   );
-}
+};
+export default WhatYouReceive;
