@@ -1,12 +1,3 @@
-// import React from 'react'
-
-// const CardsAnimation = () => {
-//   return (
-//     <div>CardsAnimation</div>
-//   )
-// }
-
-// export default CardsAnimation
 "use client";
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
@@ -34,15 +25,16 @@ const CardsAnimation = () => {
       });
   }, []);
   return (
-    <div className="h-screen bg-[url(/developer-career.png)] bg-cover bg-no-repeat bg-fixed w-full flex items-center sticky top-0 overflow-hidden ">
+    <div className="h-screen bg-cover bg-no-repeat bg-fixed w-full flex items-center sticky top-0 overflow-hidden">
       <video
         className="absolute top-0 left-0 w-full h-full object-cover"
         autoPlay
         loop
         muted
         playsInline
+        controls
       >
-        <source src="/assets/video/video.webm" type="video/mp4" />
+        <source src="/assets/video/play-video.mp4" type="video/mp4" />
       </video>
       <div ref={bgRef} className="bg-black w-full h-full relative">
         <span
